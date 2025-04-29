@@ -6,6 +6,11 @@ class UserService
     {
         try
         {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(Email))
+            {
+                throw new Error("Invalid email format");
+            }
             const user = await User.findOne({ where: { Email } });
             if (user)
             {
