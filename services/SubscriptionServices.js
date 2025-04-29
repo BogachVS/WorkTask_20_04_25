@@ -9,6 +9,10 @@ class SubscriptionService
         try
         {
             const subscription = await Subscription.findOne({ where: { UserId } });
+            if (!subscription)
+            {
+                throw new Error("Susbscription not found");
+            }
             const startDate = new Date(subscription.SubscriptionBeginDate);
             const endDate = new Date(startDate);
             endDate.setDate(startDate.getDate() + subscription.SubscriptionDuration);
@@ -81,8 +85,20 @@ class SubscriptionService
                     transaction,
                     lock: transaction.LOCK.UPDATE
                 });
+                if (!user)
+                {
+                    throw new Error("The user doesn't exist");
+                }
                 const subscription = await Subscription.findOne({ where: { UserId }, transaction });
+                if (!subscription)
+                {
+                    throw new Error("Subscription not found");
+                }
                 const project = await Project.findOne({ where: { ApiKey, UserId }, transaction });
+                if (!project)
+                {
+                    throw new Error("Project doesn't exist");
+                }
                 if (user.CurrentDevicesCount < subscription.MaxDevicesCount)
                 {
                     await Promise.all([

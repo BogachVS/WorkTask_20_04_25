@@ -6,8 +6,12 @@ class UserService
     {
         try
         {
-            await User.findOne({ where: { Email } });
-            await bcrypt.hash(Password, 10);
+            const user = await User.findOne({ where: { Email } });
+            if (user)
+            {
+                throw new Error("The user is already exist");
+            }
+            const HashedPassword = await bcrypt.hash(Password, 10);
             await User.create(
                 {
                     FirstName,
@@ -27,7 +31,11 @@ class UserService
     {
         try
         {
-            await User.findOne({ where: { Email } });
+            const user = await User.findOne({ where: { Email } });
+            if (!user)
+            {
+                throw new Error("The user doesn't exist");
+            }
             await bcrypt.compare(Password, user.Password);
         }
         catch (error)

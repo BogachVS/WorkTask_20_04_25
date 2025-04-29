@@ -82,6 +82,10 @@ class ProjectService
         try
         {
             const project = await Project.findOne({ where: { Id, UserId } });
+            if (!project)
+            {
+                throw new Error("Project doesn't exist");
+            }
             await User.decrement('CurrentDevicesCount', {
                 by: project.ProjectDevicesCount,
                 where: { Id: UserId }
