@@ -20,7 +20,7 @@ class SubscriptionController
      *       content:
      *         application/json:
      *           schema:
-     *             $ref: '#/components/schemas/Subscription'
+     *             $ref: '#/components/schemas/Subscription(add)'
      *     responses:
      *       200:
      *         description: Subscription added
@@ -177,11 +177,7 @@ class SubscriptionController
      *         content:
      *           application/json:
      *             schema:
-     *               type: object
-     *               properties:
-     *                 success:
-     *                   type: boolean
-     *                   example: true
+     *               $ref: '#/components/schemas/Subscription'
      *       400:
      *         description: Error
      *         content:
@@ -330,6 +326,29 @@ class SubscriptionController
  * @swagger
  * components:
  *   schemas:
+ *     Subscription(add):
+ *       type: object
+ *       properties:
+ *         IncludeSDK:
+ *           type: boolean
+ *           example: true
+ *         IncludeMobile:
+ *           type: boolean
+ *           example: false
+ *         MaxDevicesCount:
+ *           type: integer
+ *           example: 5
+ *         ArrayCodes:
+ *           type: array
+ *           items:
+ *             type: string
+ *         SubscriptionBeginDate:
+ *           type: string
+ *           format: date-time
+ *         SubscriptionDuration:
+ *           type: integer
+ *           example: 365    
+ * 
  *     Subscription:
  *       type: object
  *       properties:
@@ -352,6 +371,9 @@ class SubscriptionController
  *         SubscriptionDuration:
  *           type: integer
  *           example: 365
+ *         UserId:
+ *           type: integer
+ *           example: 1
  * 
  *     SubscriptionUpdate:
  *       type: object
