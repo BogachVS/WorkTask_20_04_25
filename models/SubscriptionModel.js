@@ -19,7 +19,17 @@ const Subscription = sequelize.define(
         },
         ArrayCodes:
         {
-            type: DataTypes.TEXT // тут должен храниться массив строк, но я не знаю какой тип данных есть в MSSQL Server для этого
+            type: DataTypes.TEXT, // не все СУБД поддерживают тип данных массив (если используйте PostgreSQL, то type можно заменить на DataTypes.ARRAY(DataTypes.STRING))
+            defaultValue: "[]",
+            get()
+            {
+                const rawValue = this.getDataValue('ArrayCodes');
+                return rawValue ? JSON.parse(rawValue) : [];
+            },
+            set(value)
+            {
+                this.setDataValue('ArrayCodes', JSON.stringify(value || []));
+            }
         },
         SubscriptionBeginDate:
         {

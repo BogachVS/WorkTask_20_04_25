@@ -1,6 +1,7 @@
 import ProjectService from '../services/ProjectServices.js';
 
-class ProjectController {
+class ProjectController
+{
     /**
      * @swagger
      * /projects/getProjects/{UserId}:
@@ -37,11 +38,15 @@ class ProjectController {
      *                   type: string
      *                   example: "USER_NOT_FOUND"
      */
-    async GetAllProjects(req, res) {
-        try {
+    async GetAllProjects(req, res)
+    {
+        try
+        {
             const projects = await ProjectService.GetAllUserProjects(req.params.UserId);
             return res.status(200).json(projects);
-        } catch (error) {
+        }
+        catch (error)
+        {
             return res.status(400).json({ error: error.code });
         }
     }
@@ -90,12 +95,16 @@ class ProjectController {
      *                   type: string
      *                   example: "USER_NOT_FOUND"
      */
-    async AddProject(req, res) {
-        try {
+    async AddProject(req, res)
+    {
+        try
+        {
             const { ProjectName, ProjectType } = req.body;
             await ProjectService.AddNewProject(req.params.UserId, ProjectName, ProjectType);
             return res.status(200).json({ success: true });
-        } catch (error) {
+        }
+        catch (error)
+        {
             return res.status(400).json({ error: error.code });
         }
     }
@@ -134,11 +143,15 @@ class ProjectController {
      *                   type: string
      *                   example: "PROJECT_NOT_FOUND"
      */
-    async GetInfo(req, res) {
-        try {
+    async GetInfo(req, res)
+    {
+        try
+        {
             const project = await ProjectService.GetProjectInfo(req.params.Id);
             return res.status(200).json(project);
-        } catch (error) {
+        }
+        catch (error)
+        {
             return res.status(400).json({ error: error.code });
         }
     }
@@ -190,11 +203,15 @@ class ProjectController {
      *                   type: string
      *                   example: "PROJECT_NOT_FOUND"
      */
-    async ChangeName(req, res) {
-        try {
+    async ChangeName(req, res)
+    {
+        try
+        {
             await ProjectService.ChangeProjectName(req.params.Id, req.body);
             return res.status(200).json({ success: true });
-        } catch (error) {
+        }
+        catch (error)
+        {
             return res.status(400).json({ error: error.code });
         }
     }
@@ -237,11 +254,15 @@ class ProjectController {
      *                   type: string
      *                   example: "PROJECT_NOT_FOUND"
      */
-    async RegenerateKey(req, res) {
-        try {
+    async RegenerateKey(req, res)
+    {
+        try
+        {
             await ProjectService.RegenerateApiKey(req.params.Id);
             return res.status(200).json({ success: true });
-        } catch (error) {
+        }
+        catch (error)
+        {
             return res.status(400).json({ error: error.code });
         }
     }
@@ -284,11 +305,15 @@ class ProjectController {
      *                   type: string
      *                   example: "PROJECT_NOT_FOUND"
      */
-    async DeleteProject(req, res) {
-        try {
+    async DeleteProject(req, res)
+    {
+        try
+        {
             await ProjectService.DeleteProject(req.body, req.params.Id);
             return res.status(200).json({ success: true });
-        } catch (error) {
+        }
+        catch (error)
+        {
             return res.status(400).json({ error: error.code });
         }
     }

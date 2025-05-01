@@ -18,8 +18,7 @@ class SubscriptionService
             endDate.setDate(startDate.getDate() + subscription.SubscriptionDuration);
             return new Date() < endDate;
         }
-        catch
-        (error)
+        catch(error)
         {
             return error
         }
@@ -58,9 +57,31 @@ class SubscriptionService
             return error
         }
     }
-    async AddSubscription(UserId)
+    async AddSubscription(UserId, IncludeSDK, IncludeMobile, MaxDevicesCount, ArrayCodes, SubscriptionBeginDate, SubscriptionDuration)
     {
-
+        try
+        {
+            const subscription = await Subscription.findOne({ where: { UserId } });
+            if (subscription)
+            {
+                throw new Error("Susbscription already exist, may be you want to change it!");
+            }
+            await Subscription.create(
+                {
+                    IncludeSDK,
+                    IncludeMobile,
+                    MaxDevicesCount,
+                    ArrayCodes,
+                    SubscriptionBeginDate,
+                    SubscriptionDuration,
+                    UserId
+                }
+            );
+        }
+        catch (error)
+        {
+            return error
+        }
     }
     async ChangeSubscription(UserId, Data)
     {

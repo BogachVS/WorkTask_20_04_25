@@ -1,6 +1,7 @@
 import UserService from "../services/UserServices.js";
 
-class UserController {
+class UserController
+{
     /**
      * @swagger
      * /users/registration:
@@ -56,12 +57,16 @@ class UserController {
      *                   type: string
      *                   example: "USER_ALREADY_EXISTS"
      */
-    async Registration(req, res) {
-        try {
+    async Registration(req, res)
+    {
+        try
+        {
             const { FirstName, LastName, CompanyName, Email, Password } = req.body;
             await UserService.Registration(FirstName, LastName, CompanyName, Email, Password);
             return res.status(200).json({ success: true });
-        } catch (error) {
+        }
+        catch (error)
+        {
             return res.status(400).json({ success: false, error: error.code });
         }
     }
@@ -112,12 +117,16 @@ class UserController {
      *                   type: string
      *                   example: "INVALID_CREDENTIALS"
      */
-    async Login(req, res) {
-        try {
+    async Login(req, res)
+    {
+        try
+        {
             const { Email, Password } = req.body;
             await UserService.Login(Email, Password);
             return res.status(200).json({ success: true });
-        } catch (error) {
+        }
+        catch (error)
+        {
             return res.status(400).json({ success: false, error: error.code });
         }
     }
@@ -156,11 +165,15 @@ class UserController {
      *                   type: string
      *                   example: "USER_NOT_FOUND"
      */
-    async GetUser(req, res) {
-        try {
+    async GetUser(req, res)
+    {
+        try
+        {
             const User = await UserService.GetUserInfo(req.params.id);
             return res.status(200).json(User);
-        } catch (error) {
+        }
+        catch (error)
+        {
             return res.status(400).json({ success: false, error: error.code });
         }
     }
@@ -209,11 +222,15 @@ class UserController {
      *                   type: string
      *                   example: "VALIDATION_ERROR"
      */
-    async UpdateUser(req, res) {
-        try {
+    async UpdateUser(req, res)
+    {
+        try
+        {
             await UserService.UpdateUserInfo(req.params.id, req.body);
             return res.status(200).json({ success: true });
-        } catch (error) {
+        }
+        catch (error)
+        {
             return res.status(400).json({ success: false, error: error.code });
         }
     }
@@ -256,11 +273,15 @@ class UserController {
      *                   type: string
      *                   example: "USER_NOT_FOUND"
      */
-    async DeleteUser(req, res) {
-        try {
+    async DeleteUser(req, res)
+    {
+        try
+        {
             await UserService.DeleteUser(req.params.id);
             return res.status(200).json({ success: true });
-        } catch (error) {
+        }
+        catch (error)
+        {
             return res.status(400).json({ success: false, error: error.code });
         }
     }
