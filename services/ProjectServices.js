@@ -9,12 +9,12 @@ class ProjectService
         {
             return await Project.findAll({
                 where: { UserId },
-                attributes: ['ProjectName', 'ProjectDevicesCount', 'ProjectType', 'ApiKey']
+                attributes: ['Id', 'ProjectName', 'ProjectDevicesCount', 'ProjectType', 'ApiKey', 'UserId']
             })
         }
         catch (error)
         {
-            return error;
+            throw error;
         }
     }
     async GetProjectInfo(Id)
@@ -23,12 +23,12 @@ class ProjectService
         {
             return await Project.findOne({
                 where: { Id },
-                attributes: ['ProjectName', 'ProjectDevicesCount', 'ProjectType', 'ApiKey']
+                attributes: ['Id', 'ProjectName', 'ProjectDevicesCount', 'ProjectType', 'ApiKey', 'UserId']
             });
         }
         catch (error)
         {
-            return error;
+            throw error;
         }
 
     }
@@ -48,7 +48,7 @@ class ProjectService
         }
         catch (error)
         {
-            return error;
+            throw error;
         }
     }
 
@@ -56,24 +56,44 @@ class ProjectService
     {
         try
         {
+            const project = await Project.findOne({ where: { Id } });
+            if (!project)
+            {
+                throw new Error("Project doesn't exist");
+            }
             const newKey = crypto.randomBytes(32).toString('hex');
-            await Project.update({ ApiKey: newKey }, { where: { Id } });
+            const [update] = await Project.update({ ApiKey: newKey }, { where: { Id } });
+            if (update === 0)
+            {
+                throw new Error("Project not found or new api is the same as the current one");
+            }
+            return update;
         }
         catch (error)
         {
-            return error;
+            throw error;
         }
     }
 
-    async ChangeProjectName(Id, NewName)
+    async ChangeProjectName(Id, ProjectName)
     {
         try
         {
-            await Project.update({ ProjectName: NewName }, { where: Id });
+            const project = await Project.findOne({ where: { Id } });
+            if (!project)
+            {
+                throw new Error("Project doesn't exist");
+            }
+            const [update] = await Project.update({ ProjectName }, { where: { Id } });
+            if (update === 0)
+            {
+                throw new Error("Project not found or new name is the same as the current one");
+            }
+            return update;
         }
         catch (error)
         {
-            return error;
+            throw error;
         }
     }
 
@@ -94,7 +114,7 @@ class ProjectService
         }
         catch (error)
         {
-            return error;
+            throw error;
         }
     }
 }

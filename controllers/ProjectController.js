@@ -47,7 +47,7 @@ class ProjectController
         }
         catch (error)
         {
-            return res.status(400).json({ error: error.code });
+            return res.status(400).json({ error: error.message });
         }
     }
 
@@ -105,7 +105,7 @@ class ProjectController
         }
         catch (error)
         {
-            return res.status(400).json({ error: error.code });
+            return res.status(400).json({ error: error.message });
         }
     }
 
@@ -152,7 +152,7 @@ class ProjectController
         }
         catch (error)
         {
-            return res.status(400).json({ error: error.code });
+            return res.status(400).json({ error: error.message });
         }
     }
 
@@ -178,6 +178,7 @@ class ProjectController
      *             properties:
      *               ProjectName:
      *                 type: string
+     *                 example: NewProject
      *     responses:
      *       200:
      *         description: Success
@@ -207,12 +208,13 @@ class ProjectController
     {
         try
         {
-            await ProjectService.ChangeProjectName(req.params.Id, req.body);
-            return res.status(200).json({ success: true });
+            const { ProjectName } = req.body;
+            const rowsAffected = await ProjectService.ChangeProjectName(req.params.Id, ProjectName);
+            return res.status(200).json({ success: true, rowsAffected });
         }
         catch (error)
         {
-            return res.status(400).json({ error: error.code });
+            return res.status(400).json({ error: error.message });
         }
     }
 
@@ -263,7 +265,7 @@ class ProjectController
         }
         catch (error)
         {
-            return res.status(400).json({ error: error.code });
+            return res.status(400).json({ error: error.message });
         }
     }
 
@@ -314,7 +316,7 @@ class ProjectController
         }
         catch (error)
         {
-            return res.status(400).json({ error: error.code });
+            return res.status(400).json({ error: error.message });
         }
     }
 }

@@ -67,7 +67,7 @@ class UserController
         }
         catch (error)
         {
-            return res.status(400).json({ success: false, error: error.code });
+            return res.status(400).json({ success: false, error: error.message });
         }
     }
 
@@ -127,22 +127,22 @@ class UserController
         }
         catch (error)
         {
-            return res.status(400).json({ success: false, error: error.code });
+            return res.status(400).json({ success: false, error: error.message });
         }
     }
 
     /**
      * @swagger
-     * /users/getInfo/{id}:
+     * /users/getInfo/{Id}:
      *   get:
      *     summary: Get user info
      *     tags: [Users]
      *     parameters:
      *       - in: path
-     *         name: id
+     *         name: Id
      *         required: true
      *         schema:
-     *           type: string
+     *           type: integer
      *         description: ID user
      *     responses:
      *       200:
@@ -169,27 +169,27 @@ class UserController
     {
         try
         {
-            const User = await UserService.GetUserInfo(req.params.id);
+            const User = await UserService.GetUserInfo(req.params.Id);
             return res.status(200).json(User);
         }
         catch (error)
         {
-            return res.status(400).json({ success: false, error: error.code });
+            return res.status(400).json({ success: false, error: error.message });
         }
     }
 
     /**
      * @swagger
-     * /users/updateInfo/{id}:
+     * /users/updateInfo/{Id}:
      *   put:
      *     summary: Update user info
      *     tags: [Users]
      *     parameters:
      *       - in: path
-     *         name: id
+     *         name: Id
      *         required: true
      *         schema:
-     *           type: string
+     *           type: integer
      *         description: ID user
      *     requestBody:
      *       required: true
@@ -226,27 +226,27 @@ class UserController
     {
         try
         {
-            await UserService.UpdateUserInfo(req.params.id, req.body);
-            return res.status(200).json({ success: true });
+            const rowsAffected = await UserService.UpdateUserInfo(req.params.Id, req.body);
+            return res.status(200).json({ success: true, rowsAffected });
         }
         catch (error)
         {
-            return res.status(400).json({ success: false, error: error.code });
+            return res.status(400).json({ success: false, error: error.message });
         }
     }
 
     /**
      * @swagger
-     * /users/deleteUser/{id}:
+     * /users/deleteUser/{Id}:
      *   delete:
      *     summary: Delete user
      *     tags: [Users]
      *     parameters:
      *       - in: path
-     *         name: id
+     *         name: Id
      *         required: true
      *         schema:
-     *           type: string
+     *           type: integer
      *         description: ID user
      *     responses:
      *       200:
@@ -277,12 +277,12 @@ class UserController
     {
         try
         {
-            await UserService.DeleteUser(req.params.id);
+            await UserService.DeleteUser(req.params.Id);
             return res.status(200).json({ success: true });
         }
         catch (error)
         {
-            return res.status(400).json({ success: false, error: error.code });
+            return res.status(400).json({ success: false, error: error.message });
         }
     }
 }

@@ -20,26 +20,34 @@ class SubscriptionService
         }
         catch(error)
         {
-            return error
+            throw error
         }
     }
     async GetDaysRemain(UserId)
     {
         try
         {
-            const result = await sequelize.query(`
-                SELECT DATEDIFF(NOW(), StartDate) AS days_passed
-                FROM Subscriptions
-                WHERE UserId = :userId
-            `, {
-                replacements: { userId: UserId },
-                type: sequelize.QueryTypes.SELECT
-            });
-            return result;
+            const subscription = await Subscription.findOne({ where: { UserId } });
+            if (!subscription)
+            {
+                throw new Error("Susbscription not found");
+            }
+            const result = await sequelize.query(
+                `SELECT 
+     DATEDIFF(day, GETDATE(), DATEADD(day, SubscriptionDuration, SubscriptionBeginDate)) AS DaysRemaining
+   FROM Subscriptions
+   WHERE UserId = :userId`,
+                {
+                    replacements: { userId: UserId },
+                    type: sequelize.QueryTypes.SELECT
+                }
+            );
+
+            return result[0].DaysRemaining;
         }
         catch (error)
         {
-            return error
+            throw error
         }
 
     }
@@ -54,7 +62,7 @@ class SubscriptionService
         }
         catch (error)
         {
-            return error
+            throw error
         }
     }
     async AddSubscription(UserId, IncludeSDK, IncludeMobile, MaxDevicesCount, ArrayCodes, SubscriptionBeginDate, SubscriptionDuration)
@@ -80,18 +88,28 @@ class SubscriptionService
         }
         catch (error)
         {
-            return error
+            throw error
         }
     }
     async ChangeSubscription(UserId, Data)
     {
         try
         {
-            await Subscription.update(Data, { where: { UserId } });
+            const subscription = await Subscription.findOne({ where: { UserId } });
+            if (!subscription)
+            {
+                throw new Error("Susbscription not found");
+            }
+            const [update] = await Subscription.update(Data, { where: { UserId } });
+            if (update === 0)
+            {
+                throw new Error();
+            }
+            return update;
         }
         catch (error)
         {
-            return error;
+            throw error;
         }
     }
     async AddDevice(UserId, ApiKey)
@@ -151,7 +169,7 @@ class SubscriptionService
         }
         catch (error)
         {
-            return error;
+            throw error;
         }
     }
 }

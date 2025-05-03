@@ -45,7 +45,7 @@ class SubscriptionController
      *                   type: string
      *                   example: "USER_NOT_FOUND"
      */
-    async AddSubscription(res, req)
+    async AddSubscription(req, res)
     {
         try
         {
@@ -55,7 +55,7 @@ class SubscriptionController
         }
         catch (error)
         {
-            return res.status(400).json({ error: error.code });
+            return res.status(400).json({ error: error.message });
         }
     }
     /**
@@ -95,7 +95,7 @@ class SubscriptionController
      *                   type: string
      *                   example: "USER_NOT_FOUND"
      */
-    async IsActive(res, req)
+    async IsActive(req, res)
     {
         try
         {
@@ -104,7 +104,7 @@ class SubscriptionController
         }
         catch (error)
         {
-            return res.status(400).json({ error: error.code });
+            return res.status(400).json({ error: error.message });
         }
     }
 
@@ -145,7 +145,7 @@ class SubscriptionController
      *                   type: string
      *                   example: "USER_NOT_FOUND"
      */
-    async GetDays(res, req)
+    async GetDays(req, res)
     {
         try
         {
@@ -154,7 +154,7 @@ class SubscriptionController
         }
         catch (error)
         {
-            return res.status(400).json({ error: error.code });
+            return res.status(400).json({ error: error.message });
         }
     }
 
@@ -192,7 +192,7 @@ class SubscriptionController
      *                   type: string
      *                   example: "USER_NOT_FOUND"
      */
-    async GetInfo(res, req)
+    async GetInfo(req, res)
     {
         try
         {
@@ -201,7 +201,7 @@ class SubscriptionController
         }
         catch (error)
         {
-            return res.status(400).json({ error: error.code });
+            return res.status(400).json({ error: error.message });
         }
     }
 
@@ -249,15 +249,15 @@ class SubscriptionController
      *                   type: string
      *                   example: "USER_NOT_FOUND"
      */
-    async UpdateSubscription(res, req) {
+    async UpdateSubscription(req, res) {
         try
         {
-            await SubscriptionService.ChangeSubscription(req.params.UserId, req.body);
-            return res.status(200).json({ success: true });
+            const rowsAffected = await SubscriptionService.ChangeSubscription(req.params.UserId, req.body);
+            return res.status(200).json({ success: true, rowsAffected });
         }
         catch (error)
         {
-            return res.status(400).json({ error: error.code });
+            return res.status(400).json({ error: error.message });
         }
     }
 
@@ -309,7 +309,7 @@ class SubscriptionController
      *                   type: string
      *                   example: "USER_NOT_FOUND"
      */
-    async AddDevice(res, req) {
+    async AddDevice(req, res) {
         try
         {
             await SubscriptionService.AddDevice(req.params.UserId, req.body);
@@ -317,7 +317,7 @@ class SubscriptionController
         }
         catch (error)
         {
-            return res.status(400).json({ error: error.code });
+            return res.status(400).json({ error: error.message });
         }
     }
 }
@@ -365,6 +365,7 @@ class SubscriptionController
  *           type: array
  *           items:
  *             type: string
+ *           example: ["QR","Barcode","Datamatrix"]
  *         SubscriptionBeginDate:
  *           type: string
  *           format: date-time

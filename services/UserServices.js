@@ -29,7 +29,7 @@ class UserService
         }
         catch (error)
         {
-            return error;
+            throw error;
         }
     }
     async Login(Email, Password)
@@ -45,7 +45,7 @@ class UserService
         }
         catch (error)
         {
-            return error;
+            throw error;
         }
     }
 
@@ -53,14 +53,19 @@ class UserService
     {
         try
         {
-            return await User.findByPk(Id,
+            const user =  await User.findByPk(Id,
                 {
                     attributes: ['FirstName', 'LastName', 'CompanyName', 'Email', 'INN', 'CurrentDevicesCount']
                 });
+            if (!user)
+            {
+                throw new Error("User doesn't exist");
+            }
+            return user;
         }
         catch (error)
         {
-            return error
+            throw error
         }
     }
 
@@ -68,11 +73,11 @@ class UserService
     {
         try
         {
-            await User.update(Data, {  where: { Id }, });
+            return await User.update(Data, { where: { Id }, });
         }
         catch (error)
         {
-            return error;
+            throw error;
         }
     }
 
@@ -80,11 +85,16 @@ class UserService
     {
         try
         {
+            const user = User.findByPk(Id);
+            if (!user)
+            {
+                throw new Error("User doesn't exist");
+            }
             await User.destroy({ where: { Id } });
         }
         catch (error)
         {
-            return error;
+            throw error;
         }
     }
 }
