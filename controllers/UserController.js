@@ -62,6 +62,10 @@ class UserController
         try
         {
             const { FirstName, LastName, CompanyName, Email, Password } = req.body;
+            if (!Password || Password.length < 8) // 
+            {
+                return res.status(400).json({ success: false, error: "Password must contain at least 8 symbols"});
+            }
             await UserService.Registration(FirstName, LastName, CompanyName, Email, Password);
             return res.status(200).json({ success: true });
         }

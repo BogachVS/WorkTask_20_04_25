@@ -38,8 +38,7 @@ const User = sequelize.define(
         Password:
         {
             type: DataTypes.STRING,
-            allowNull: false,
-            
+            allowNull: true,
         },
         INN:
         {
@@ -62,7 +61,7 @@ const User = sequelize.define(
 );
 User.associate = (models) =>
 {
-    User.hasMany(models.Project, { foreignKey: 'UserId' });
-    User.hasOne(models.Subscription, { foreignKey: 'UserId' });
+    User.hasMany(models.Project, { foreignKey: 'UserId', onDelete:'CASCADE' });
+    User.hasOne(models.Subscription, { foreignKey: 'UserId', onDelete:'CASCADE' });
 };
 export default User;

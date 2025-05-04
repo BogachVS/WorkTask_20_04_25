@@ -1,4 +1,7 @@
 import User from "../models/UserModel.js";
+import Project from "../models/ProjectModel.js";
+import Subscription from "../models/SubscriptionModel.js";
+
 import bcrypt from 'bcrypt';
 class UserService
 {
@@ -85,7 +88,7 @@ class UserService
     {
         try
         {
-            const user = User.findByPk(Id);
+            const user = await User.findByPk(Id);
             if (!user)
             {
                 throw new Error("User doesn't exist");
