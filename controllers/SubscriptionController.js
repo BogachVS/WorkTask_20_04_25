@@ -342,6 +342,7 @@ class SubscriptionController
  *           type: array
  *           items:
  *             type: string
+ *           example: ["QR","Barcode","Datamatrix"]
  *         SubscriptionBeginDate:
  *           type: string
  *           format: date-time
