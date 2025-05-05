@@ -29,7 +29,7 @@ class SubscriptionController
      *             schema:
      *               type: object
      *               properties:
-     *                 isActive:
+     *                 success:
      *                   type: boolean
      *       400:
      *         description: Error
