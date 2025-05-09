@@ -62,6 +62,7 @@ const User = sequelize.define(
 User.associate = (models) =>
 {
     User.hasMany(models.Project, { foreignKey: 'UserId', onDelete:'CASCADE' });
+    User.hasMany(models.Token, { foreignKey: 'UserId', onDelete: 'CASCADE' });
     User.hasOne(models.Subscription, { foreignKey: 'UserId', onDelete:'CASCADE' });
 };
 export default User;

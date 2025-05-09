@@ -4,17 +4,10 @@ class ProjectController
 {
     /**
      * @swagger
-     * /projects/getProjects/{UserId}:
+     * /projects/getProjects:
      *   get:
      *     summary: Get all user projects
      *     tags: [Projects]
-     *     parameters:
-     *       - in: path
-     *         name: UserId
-     *         required: true
-     *         schema:
-     *           type: string
-     *         description: ID user
      *     responses:
      *       200:
      *         description: Get all projects
@@ -42,7 +35,7 @@ class ProjectController
     {
         try
         {
-            const projects = await ProjectService.GetAllUserProjects(req.params.UserId);
+            const projects = await ProjectService.GetAllUserProjects(req.user.id);
             return res.status(200).json(projects);
         }
         catch (error)
@@ -53,17 +46,10 @@ class ProjectController
 
     /**
      * @swagger
-     * /projects/addProject/{UserId}:
+     * /projects/addProject:
      *   post:
      *     summary: Add new project
      *     tags: [Projects]
-     *     parameters:
-     *       - in: path
-     *         name: UserId
-     *         required: true
-     *         schema:
-     *           type: string
-     *         description: ID user
      *     requestBody:
      *       required: true
      *       content:
@@ -100,7 +86,7 @@ class ProjectController
         try
         {
             const { ProjectName, ProjectType } = req.body;
-            await ProjectService.AddNewProject(req.params.UserId, ProjectName, ProjectType);
+            await ProjectService.AddNewProject(req.user.id, ProjectName, ProjectType);
             return res.status(200).json({ success: true });
         }
         catch (error)

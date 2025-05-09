@@ -1,8 +1,10 @@
 import User from "../models/UserModel.js";
-import Project from "../models/ProjectModel.js";
-import Subscription from "../models/SubscriptionModel.js";
-
+import Token from "../models/TokenModel.js";
+import jwt from "jsonwebtoken";
 import bcrypt from 'bcrypt';
+
+const jwtSecret = process.env.JWT_SECRET;
+
 class UserService
 {
     async Registration(FirstName, LastName, CompanyName, Email, Password)
@@ -35,22 +37,40 @@ class UserService
             throw error;
         }
     }
+
     async Login(Email, Password)
     {
         try
         {
             const user = await User.findOne({ where: { Email } });
-            if (!user)
-            {
-                throw new Error("The user doesn't exist");
-            }
-            await bcrypt.compare(Password, user.Password);
+            if (!user || !user.Password) throw new Error("Invalid credentials");
+
+            const match = await bcrypt.compare(Password, user.Password);
+            if (!match) throw new Error("Wrong password");
+            
+            return this.GenerateTokens(user);
         }
         catch (error)
         {
             throw error;
         }
     }
+
+    async OAuthLogin(email, name) {
+        let user = await User.findOne({ where: { Email: email } });
+        if (!user) {
+          const [firstName, ...lastParts] = name.split(" ");
+          user = await User.create({
+            FirstName: firstName,
+            LastName: lastParts.join(" ") || " ",
+            CompanyName: "OAuth Company",
+            Email: email,
+            Password: null
+          });
+        }
+        
+        return this.GenerateTokens(user);
+      }
 
     async GetUserInfo(Id)
     {
@@ -100,5 +120,30 @@ class UserService
             throw error;
         }
     }
+
+    async RefreshTokens(oldRefreshToken) {
+        const tokenRecord = await Token.findOne({ where: { RefreshToken: oldRefreshToken } });
+        if (!tokenRecord || new Date() > new Date(tokenRecord.ExpiresAt)) {
+          throw new Error("Refresh token is invalid or expired");
+        }
+
+        await tokenRecord.destroy()
+        const user = await User.findByPk(tokenRecord.UserId);
+        return this.GenerateTokens(user);
+    }
+
+    async GenerateTokens(user) {
+        const payload = { id: user.Id, email: user.Email };
+        const accessToken = jwt.sign(payload, jwtSecret, { expiresIn: '15m' });
+        const refreshToken = jwt.sign(payload, jwtSecret, { expiresIn: '7d' });
+    
+        await Token.create({
+          RefreshToken: refreshToken,
+          UserId: user.Id,
+          ExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        });
+    
+        return { accessToken, refreshToken };
+      }
 }
 export default new UserService();

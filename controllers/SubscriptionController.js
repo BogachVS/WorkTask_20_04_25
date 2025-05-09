@@ -4,17 +4,10 @@ class SubscriptionController
 {
     /**
      * @swagger
-     * /subscriptions/addSubscription/{UserId}:
+     * /subscriptions/addSubscription:
      *   post:
      *     summary: Add a new subscription for a user
      *     tags: [Subscriptions]
-     *     parameters:
-     *       - in: path
-     *         name: UserId
-     *         required: true
-     *         schema:
-     *           type: integer
-     *         description: ID of the user to add the subscription to
      *     requestBody:
      *       required: true
      *       content:
@@ -50,7 +43,7 @@ class SubscriptionController
         try
         {
             const { IncludeSDK, IncludeMobile, MaxDevicesCount, ArrayCodes, SubscriptionBeginDate, SubscriptionDuration } = req.body;
-            await SubscriptionService.AddSubscription(req.params.UserId, IncludeSDK, IncludeMobile, MaxDevicesCount, ArrayCodes, SubscriptionBeginDate, SubscriptionDuration);
+            await SubscriptionService.AddSubscription(req.user.id, IncludeSDK, IncludeMobile, MaxDevicesCount, ArrayCodes, SubscriptionBeginDate, SubscriptionDuration);
             return res.status(200).json({ success: true });
         }
         catch (error)
@@ -60,17 +53,10 @@ class SubscriptionController
     }
     /**
      * @swagger
-     * /subscriptions/isActiveInfo/{UserId}:
+     * /subscriptions/isActiveInfo:
      *   get:
      *     summary: Check subscription activity
      *     tags: [Subscriptions]
-     *     parameters:
-     *       - in: path
-     *         name: UserId
-     *         required: true
-     *         schema:
-     *           type: string
-     *         description: ID user
      *     responses:
      *       200:
      *         description: Subscription status
@@ -99,7 +85,7 @@ class SubscriptionController
     {
         try
         {
-            const answer = await SubscriptionService.IsActiveSubscription(req.params.UserId);
+            const answer = await SubscriptionService.IsActiveSubscription(req.user.id);
             return res.status(200).json(answer);
         }
         catch (error)
@@ -110,17 +96,10 @@ class SubscriptionController
 
     /**
      * @swagger
-     * /subscriptions/getDays/{UserId}:
+     * /subscriptions/getDays:
      *   get:
      *     summary: Get remain days
      *     tags: [Subscriptions]
-     *     parameters:
-     *       - in: path
-     *         name: UserId
-     *         required: true
-     *         schema:
-     *           type: string
-     *         description: ID user
      *     responses:
      *       200:
      *         description: Days numb
@@ -149,7 +128,7 @@ class SubscriptionController
     {
         try
         {
-            const days = await SubscriptionService.GetDaysRemain(req.params.UserId);
+            const days = await SubscriptionService.GetDaysRemain(req.user.id);
             return res.status(200).json(days);
         }
         catch (error)
@@ -160,17 +139,10 @@ class SubscriptionController
 
     /**
      * @swagger
-     * /subscriptions/getInfo/{UserId}:
+     * /subscriptions/getInfo:
      *   get:
      *     summary: Get subscription info
      *     tags: [Subscriptions]
-     *     parameters:
-     *       - in: path
-     *         name: UserId
-     *         required: true
-     *         schema:
-     *           type: string
-     *         description: ID user
      *     responses:
      *       200:
      *         description: Success
@@ -196,7 +168,7 @@ class SubscriptionController
     {
         try
         {
-            const subscription = await SubscriptionService.GetSubscriptionInfo(req.params.UserId);
+            const subscription = await SubscriptionService.GetSubscriptionInfo(req.user.id);
             return res.status(200).json(subscription);
         }
         catch (error)
@@ -207,17 +179,10 @@ class SubscriptionController
 
     /**
      * @swagger
-     * /subscriptions/updateSubscription/{UserId}:
+     * /subscriptions/updateSubscription:
      *   put:
      *     summary: Update subscription
      *     tags: [Subscriptions]
-     *     parameters:
-     *       - in: path
-     *         name: UserId
-     *         required: true
-     *         schema:
-     *           type: string
-     *         description: ID user
      *     requestBody:
      *       required: true
      *       content:
@@ -252,7 +217,7 @@ class SubscriptionController
     async UpdateSubscription(req, res) {
         try
         {
-            const rowsAffected = await SubscriptionService.ChangeSubscription(req.params.UserId, req.body);
+            const rowsAffected = await SubscriptionService.ChangeSubscription(req.user.id, req.body);
             return res.status(200).json({ success: true, rowsAffected });
         }
         catch (error)
@@ -263,17 +228,10 @@ class SubscriptionController
 
     /**
      * @swagger
-     * /subscriptions/addDevice/{UserId}:
+     * /subscriptions/addDevice:
      *   put:
      *     summary: Add device
      *     tags: [Subscriptions]
-     *     parameters:
-     *       - in: path
-     *         name: UserId
-     *         required: true
-     *         schema:
-     *           type: string
-     *         description: ID user
      *     requestBody:
      *       required: true
      *       content:
@@ -312,7 +270,7 @@ class SubscriptionController
     async AddDevice(req, res) {
         try
         {
-            await SubscriptionService.AddDevice(req.params.UserId, req.body);
+            await SubscriptionService.AddDevice(req.user.id, req.body);
             return res.status(200).json({ success: true });
         }
         catch (error)
