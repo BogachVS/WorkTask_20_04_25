@@ -1,16 +1,15 @@
+import swaggerUi from 'swagger-ui-express';
+import cookieParser from 'cookie-parser';
+import swaggerJSDoc from 'swagger-jsdoc';
 import createError from 'http-errors';
 import express from 'express';
-import path from 'path';
-import cookieParser from 'cookie-parser';
 import logger from 'morgan';
-import { fileURLToPath } from 'url';
-import sequelize from './db.config.js';
-import swaggerUi from 'swagger-ui-express';
-import swaggerJSDoc from 'swagger-jsdoc';
 
-import UserRouter from './routes/UserRoutes.js';
+import sequelize from './db.config.js';
+
 import SubscriptionRouter from './routes/SubscriptionRoutes.js';
 import ProjectRouter from './routes/ProjectRoutes.js';
+import UserRouter from './routes/UserRoutes.js';
 import AuthRouter from './routes/AuthRoutes.js';
 
 const app = express();
@@ -46,16 +45,12 @@ app.use('/api-docs', (req, res, next) => {
     next();
 }, swaggerUi.serve, swaggerUi.setup(specs));
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
+
 
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/subscriptions', SubscriptionRouter);
 app.use('/projects', ProjectRouter);
