@@ -11,18 +11,31 @@ import swaggerJSDoc from 'swagger-jsdoc';
 import UserRouter from './routes/UserRoutes.js';
 import SubscriptionRouter from './routes/SubscriptionRoutes.js';
 import ProjectRouter from './routes/ProjectRoutes.js';
+import AuthRouter from './routes/AuthRoutes.js';
 
 const app = express();
+
 const options = {
-    definition: {
-        openapi: '3.0.0',
-        info: {
-            title: 'My API',
-            version: '1.0.0',
-        },
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'My API',
+      version: '1.0.0',
     },
-    apis: ['./controllers/*.js',
-        './routes/*.js'],  
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT'
+        }
+      }
+    },
+    security: [
+      { bearerAuth: [] }
+    ]
+  },
+  apis: ['./controllers/*.js', './routes/*.js'],
 };
 
 const specs = swaggerJSDoc(options);
@@ -32,6 +45,7 @@ app.use('/api-docs', (req, res, next) => {
     res.setHeader('Expires', '0');
     next();
 }, swaggerUi.serve, swaggerUi.setup(specs));
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.set('views', path.join(__dirname, 'views'));
@@ -46,6 +60,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/subscriptions', SubscriptionRouter);
 app.use('/projects', ProjectRouter);
 app.use('/users', UserRouter);
+app.use('/auth', AuthRouter);
+
 app.use(function(req, res, next) {
   next(createError(404));
 });

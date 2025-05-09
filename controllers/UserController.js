@@ -107,6 +107,12 @@ class UserController
      *                 success:
      *                   type: boolean
      *                   example: true
+     *                 accessToken:
+     *                   type: string
+     *                   example: "token"
+     *                 refreshToken:
+     *                   type: string
+     *                   example: "token"
      *       400:
      *         description: Error login
      *         content:
@@ -126,8 +132,8 @@ class UserController
         try
         {
             const { Email, Password } = req.body;
-            await UserService.Login(Email, Password);
-            return res.status(200).json({ success: true });
+            var tokens = await UserService.Login(Email, Password);
+            return res.status(200).json({ success: true, accessToken: tokens.accessToken, refreshToken: tokens.refreshToken });
         }
         catch (error)
         {
@@ -137,17 +143,10 @@ class UserController
 
     /**
      * @swagger
-     * /users/getInfo/{Id}:
+     * /users/getInfo:
      *   get:
      *     summary: Get user info
      *     tags: [Users]
-     *     parameters:
-     *       - in: path
-     *         name: Id
-     *         required: true
-     *         schema:
-     *           type: integer
-     *         description: ID user
      *     responses:
      *       200:
      *         description: Success
@@ -173,7 +172,7 @@ class UserController
     {
         try
         {
-            const User = await UserService.GetUserInfo(req.params.Id);
+            const User = await UserService.GetUserInfo(req.user.id);
             return res.status(200).json(User);
         }
         catch (error)
@@ -184,17 +183,10 @@ class UserController
 
     /**
      * @swagger
-     * /users/updateInfo/{Id}:
+     * /users/updateInfo:
      *   put:
      *     summary: Update user info
      *     tags: [Users]
-     *     parameters:
-     *       - in: path
-     *         name: Id
-     *         required: true
-     *         schema:
-     *           type: integer
-     *         description: ID user
      *     requestBody:
      *       required: true
      *       content:
@@ -230,7 +222,7 @@ class UserController
     {
         try
         {
-            const rowsAffected = await UserService.UpdateUserInfo(req.params.Id, req.body);
+            const rowsAffected = await UserService.UpdateUserInfo(req.user.id, req.body);
             return res.status(200).json({ success: true, rowsAffected });
         }
         catch (error)
@@ -241,17 +233,10 @@ class UserController
 
     /**
      * @swagger
-     * /users/deleteUser/{Id}:
+     * /users/deleteUser:
      *   delete:
      *     summary: Delete user
      *     tags: [Users]
-     *     parameters:
-     *       - in: path
-     *         name: Id
-     *         required: true
-     *         schema:
-     *           type: integer
-     *         description: ID user
      *     responses:
      *       200:
      *         description: Success
@@ -281,7 +266,7 @@ class UserController
     {
         try
         {
-            await UserService.DeleteUser(req.params.Id);
+            await UserService.DeleteUser(req.user.id);
             return res.status(200).json({ success: true });
         }
         catch (error)
@@ -290,55 +275,4 @@ class UserController
         }
     }
 }
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     User:
- *       type: object
- *       properties:
- *         Id:
- *           type: integer
- *           example: 1
- *         FirstName:
- *           type: string
- *           example: "John"
- *         LastName:
- *           type: string
- *           example: "Jones"
- *         CompanyName:
- *           type: string
- *           example: "OOO Company"
- *         Email:
- *           type: string
- *           format: email
- *           example: "user@example.com"
- *         INN:
- *           type: string
- *           example: "0123456789"
- *         CurrentDevicesCount:
- *           type: integer
- *           example: 5
- * 
- *     UserUpdate:
- *       type: object
- *       properties:
- *         FirstName:
- *           type: string
- *           example: "New name"
- *         LastName:
- *           type: string
- *           example: "New surname"
- *         CompanyName:
- *           type: string
- *           example: "New company"
- *         Email:
- *           type: string
- *           format: email
- *           example: "new-email@example.com"
- *         INN:
- *           type: string
- *           example: "9876543210"
- */
 export default new UserController();
