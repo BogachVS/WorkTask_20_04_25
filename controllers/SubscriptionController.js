@@ -43,12 +43,45 @@ class SubscriptionController
         try
         {
             const { IncludeSDK, IncludeMobile, MaxDevicesCount, ArrayCodes, SubscriptionBeginDate, SubscriptionDuration } = req.body;
-            await SubscriptionService.AddSubscription(req.user.id, IncludeSDK, IncludeMobile, MaxDevicesCount, ArrayCodes, SubscriptionBeginDate, SubscriptionDuration);
-            return res.status(200).json({ success: true });
+            if (!SubscriptionBeginDate || !SubscriptionDuration || !MaxDevicesCount)
+            {
+                return res.status(400).json({
+                    success: false,
+                    error: "MaxDevicesCount, SubscriptionBeginDate and SubscriptionDuration are required"
+                });
+            }
+            await SubscriptionService.AddSubscription(
+                req.user.id,
+                IncludeSDK,
+                IncludeMobile,
+                MaxDevicesCount,
+                ArrayCodes,
+                SubscriptionBeginDate,
+                SubscriptionDuration);
+            return res.status(201).json({ success: true, message: "Subscription added successfully" });
         }
         catch (error)
         {
-            return res.status(400).json({ error: error.message });
+            if (error.message.includes("Susbscription already exist"))
+            {
+                return res.status(400).json({
+                    success: false,
+                    error: error.message
+                });
+            }
+            if (error.name?.includes("Sequelize"))
+            {
+                return res.status(500).json({
+                    success: false,
+                    error: "Database error",
+                    details: process.env.NODE_ENV === "development" ? error.message : undefined
+                });
+            }
+            return res.status(500).json({
+                success: false,
+                error: "Failed to add subscription",
+                details: process.env.NODE_ENV === "development" ? error.message : undefined
+            });
         }
     }
     /**
@@ -85,12 +118,36 @@ class SubscriptionController
     {
         try
         {
-            const answer = await SubscriptionService.IsActiveSubscription(req.user.id);
-            return res.status(200).json(answer);
+            const isActive = await SubscriptionService.IsActiveSubscription(req.user.id);
+            return res.status(200).json({
+                success: true,
+                isActive
+            });
         }
         catch (error)
         {
-            return res.status(400).json({ error: error.message });
+            if (error.message.includes("not found"))
+            {
+                return res.status(404).json({
+                    success: false,
+                    error: "Subscription not found"
+                });
+            }
+
+            if (error.name?.includes("Sequelize"))
+            {
+                return res.status(500).json({
+                    success: false,
+                    error: "Database error",
+                    details: process.env.NODE_ENV === "development" ? error.message : undefined
+                });
+            }
+
+            return res.status(500).json({
+                success: false,
+                error: "Failed to check subscription status",
+                details: process.env.NODE_ENV === "development" ? error.message : undefined
+            });
         }
     }
 
@@ -129,11 +186,33 @@ class SubscriptionController
         try
         {
             const days = await SubscriptionService.GetDaysRemain(req.user.id);
-            return res.status(200).json(days);
+            return res.status(200).json({
+                success: true,
+                days
+            });
         }
         catch (error)
         {
-            return res.status(400).json({ error: error.message });
+            if (error.message.includes("not found"))
+            {
+                return res.status(404).json({
+                    success: false,
+                    error: "Subscription not found"
+                });
+            }
+            if (error.name?.includes("Sequelize"))
+            {
+                return res.status(500).json({
+                    success: false,
+                    error: "Database error",
+                    details: process.env.NODE_ENV === "development" ? error.message : undefined
+                });
+            }
+            return res.status(500).json({
+                success: false,
+                error: "Failed to get remaining days",
+                details: process.env.NODE_ENV === "development" ? error.message : undefined
+            });
         }
     }
 
@@ -169,11 +248,34 @@ class SubscriptionController
         try
         {
             const subscription = await SubscriptionService.GetSubscriptionInfo(req.user.id);
-            return res.status(200).json(subscription);
+            if (!subscription)
+            {
+                return res.status(404).json({
+                    success: false,
+                    error: "Subscription not found"
+                });
+            }
+
+            return res.status(200).json({
+                success: true,
+                data: subscription
+            });
         }
         catch (error)
         {
-            return res.status(400).json({ error: error.message });
+            if (error.name?.includes("Sequelize"))
+            {
+                return res.status(500).json({
+                    success: false,
+                    error: "Database error",
+                    details: process.env.NODE_ENV === "development" ? error.message : undefined
+                });
+            }
+            return res.status(500).json({
+                success: false,
+                error: "Failed to get subscription info",
+                details: process.env.NODE_ENV === "development" ? error.message : undefined
+            });
         }
     }
 
@@ -214,15 +316,54 @@ class SubscriptionController
      *                   type: string
      *                   example: "USER_NOT_FOUND"
      */
-    async UpdateSubscription(req, res) {
+    async UpdateSubscription(req, res)
+    {
         try
         {
+            if (!req.body || Object.keys(req.body).length === 0)
+            {
+                return res.status(400).json({
+                    success: false,
+                    error: "No data provided for update"
+                });
+            }
             const rowsAffected = await SubscriptionService.ChangeSubscription(req.user.id, req.body);
-            return res.status(200).json({ success: true, rowsAffected });
+            if (rowsAffected === 0)
+            {
+                return res.status(404).json({
+                    success: false,
+                    error: "Subscription not found or no changes made"
+                });
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: "Subscription updated successfully",
+                rowsAffected
+            });
         }
         catch (error)
         {
-            return res.status(400).json({ error: error.message });
+            if (error.message.includes("not found"))
+            {
+                return res.status(404).json({
+                    success: false,
+                    error: error.message
+                });
+            }
+            if (error.name?.includes("Sequelize"))
+            {
+                return res.status(500).json({
+                    success: false,
+                    error: "Database error",
+                    details: process.env.NODE_ENV === "development" ? error.message : undefined
+                });
+            }
+            return res.status(500).json({
+                success: false,
+                error: "Failed to update subscription",
+                details: process.env.NODE_ENV === "development" ? error.message : undefined
+            });
         }
     }
 
@@ -267,15 +408,50 @@ class SubscriptionController
      *                   type: string
      *                   example: "USER_NOT_FOUND"
      */
-    async AddDevice(req, res) {
+    async AddDevice(req, res)
+    {
         try
         {
+            if (!req.body.ApiKey)
+            {
+                return res.status(400).json({
+                    success: false,
+                    error: "ApiKey is required"
+                });
+            }
             await SubscriptionService.AddDevice(req.user.id, req.body);
             return res.status(200).json({ success: true });
         }
         catch (error)
         {
-            return res.status(400).json({ error: error.message });
+            if (error.message.includes("not found") || error.message.includes("doesn't exist"))
+            {
+                return res.status(404).json({
+                    success: false,
+                    error: error.message
+                });
+            }
+
+            if (error.message.includes("limit has been reached") || error.message.includes("isn't active"))
+            {
+                return res.status(403).json({
+                    success: false,
+                    error: error.message
+                });
+            }
+            if (error.name?.includes("Sequelize"))
+            {
+                return res.status(500).json({
+                    success: false,
+                    error: "Database error",
+                    details: process.env.NODE_ENV === "development" ? error.message : undefined
+                });
+            }
+            return res.status(500).json({
+                success: false,
+                error: "Failed to add device",
+                details: process.env.NODE_ENV === "development" ? error.message : undefined
+            });
         }
     }
 }

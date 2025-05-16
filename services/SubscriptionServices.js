@@ -72,7 +72,7 @@ class SubscriptionService
             const subscription = await Subscription.findOne({ where: { UserId } });
             if (subscription)
             {
-                throw new Error("Susbscription already exist, may be you want to change it!");
+                throw new Error("Susbscription already exist");
             }
             await Subscription.create(
                 {

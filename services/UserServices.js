@@ -1,4 +1,6 @@
 import User from "../models/UserModel.js";
+import Project from "../models/ProjectModel.js";
+import Subscription from "../models/SubscriptionModel.js";
 import Token from "../models/TokenModel.js";
 import jwt from "jsonwebtoken";
 import bcrypt from 'bcrypt';
@@ -43,7 +45,7 @@ class UserService
         try
         {
             const user = await User.findOne({ where: { Email } });
-            if (!user || !user.Password) throw new Error("Invalid credentials");
+            if (!user || !user.Password) throw new Error("Not found");
 
             const match = await bcrypt.compare(Password, user.Password);
             if (!match) throw new Error("Wrong password");
@@ -96,7 +98,12 @@ class UserService
     {
         try
         {
-            return await User.update(Data, { where: { Id }, });
+            const [update] = await User.update(Data, { where: { Id }, });
+            if (update === 0)
+            {
+                throw new Error("User not found or no changes applied");
+            }
+            return update;
         }
         catch (error)
         {
@@ -113,7 +120,10 @@ class UserService
             {
                 throw new Error("User doesn't exist");
             }
-            await User.destroy({ where: { Id } });
+            return await User.destroy({
+                where: { Id },
+                individualHooks: true
+            });
         }
         catch (error)
         {
@@ -121,9 +131,11 @@ class UserService
         }
     }
 
-    async RefreshTokens(oldRefreshToken) {
+    async RefreshTokens(oldRefreshToken)
+    {
         const tokenRecord = await Token.findOne({ where: { RefreshToken: oldRefreshToken } });
-        if (!tokenRecord || new Date() > new Date(tokenRecord.ExpiresAt)) {
+        if (!tokenRecord || new Date() > new Date(tokenRecord.ExpiresAt))
+        {
           throw new Error("Refresh token is invalid or expired");
         }
 
@@ -132,7 +144,8 @@ class UserService
         return this.GenerateTokens(user);
     }
 
-    async GenerateTokens(user) {
+    async GenerateTokens(user)
+    {
         const payload = { id: user.Id, email: user.Email };
         const accessToken = jwt.sign(payload, jwtSecret, { expiresIn: '15m' });
         const refreshToken = jwt.sign(payload, jwtSecret, { expiresIn: '7d' });

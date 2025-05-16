@@ -62,16 +62,57 @@ class UserController
         try
         {
             const { FirstName, LastName, CompanyName, Email, Password } = req.body;
-            if (!Password || Password.length < 8) // 
+            if (!FirstName || !LastName || !Email || !Password)
             {
-                return res.status(400).json({ success: false, error: "Password must contain at least 8 symbols"});
+                return res.status(400).json({
+                    success: false,
+                    error: "All fields are required: FirstName, LastName, Email, Password"
+                });
+            }
+            if (!Password || Password.length < 8) 
+            {
+                return res.status(400).json({
+                    success: false,
+                    error: "Password must contain at least 8 symbols"
+                });
             }
             await UserService.Registration(FirstName, LastName, CompanyName, Email, Password);
-            return res.status(200).json({ success: true });
+            return res.status(201).json({
+                success: true,
+                message: "User registered successfully"
+            });
         }
         catch (error)
         {
-            return res.status(400).json({ success: false, error: error.message });
+            if (error.message === "Invalid email format")
+            {
+                return res.status(400).json({
+                    success: false,
+                    error: "Invalid email format"
+                });
+            }
+
+            if (error.message === "The user is already exist")
+            {
+                return res.status(400).json({
+                    success: false,
+                    error: "User with this email already exists"
+                });
+            }
+
+            if (error.name?.includes("Sequelize")) {
+                return res.status(500).json({
+                    success: false,
+                    error: "Database error",
+                    details: process.env.NODE_ENV === "development" ? error.message : undefined
+                });
+            }
+
+            return res.status(500).json({
+                success: false,
+                error: "Internal server error",
+                details: process.env.NODE_ENV === "development" ? error.message : undefined
+            });
         }
     }
 
@@ -132,12 +173,50 @@ class UserController
         try
         {
             const { Email, Password } = req.body;
+            if (!Email || !Password)
+            {
+                return res.status(400).json({
+                    success: false,
+                    error: "Email and password are required"
+                });
+            }
             var tokens = await UserService.Login(Email, Password);
-            return res.status(200).json({ success: true, accessToken: tokens.accessToken, refreshToken: tokens.refreshToken });
+            return res.status(200).json({
+                success: true,
+                accessToken: tokens.accessToken,
+                refreshToken: tokens.refreshToken
+            });
         }
         catch (error)
         {
-            return res.status(400).json({ success: false, error: error.message });
+            if (error.message === "Not found")
+            {
+                return res.status(404).json({
+                    success: false,
+                    error: "Not found" 
+                });
+            }
+            if (error.message === "Wrong password")
+            {
+                return res.status(401).json({
+                    success: false,
+                    error: "Wrong password"
+                });
+            }
+            if (error.name?.includes("Sequelize"))
+            {
+                return res.status(500).json({
+                    success: false,
+                    error: "Database error",
+                    details: process.env.NODE_ENV === "development" ? error.message : undefined
+                });
+            }
+
+            return res.status(500).json({
+                success: false,
+                error: "Internal server error",
+                details: process.env.NODE_ENV === "development" ? error.message : undefined
+            });
         }
     }
 
@@ -173,11 +252,34 @@ class UserController
         try
         {
             const User = await UserService.GetUserInfo(req.user.id);
-            return res.status(200).json(User);
+            return res.status(200).json({
+                success: true,
+                data: User
+            });
         }
         catch (error)
         {
-            return res.status(400).json({ success: false, error: error.message });
+            if (error.message === "User doesn't exist")
+            {
+                return res.status(404).json({
+                    success: false,
+                    error: "User not found"
+                });
+            }
+            if (error.name?.includes("Sequelize"))
+            {
+                return res.status(500).json({
+                    success: false,
+                    error: "Database error",
+                    details: process.env.NODE_ENV === "development" ? error.message : undefined
+                });
+            }
+
+            return res.status(500).json({
+                success: false,
+                error: "Internal server error",
+                details: process.env.NODE_ENV === "development" ? error.message : undefined
+            });
         }
     }
 
@@ -222,12 +324,52 @@ class UserController
     {
         try
         {
-            const rowsAffected = await UserService.UpdateUserInfo(req.user.id, req.body);
-            return res.status(200).json({ success: true, rowsAffected });
+            if (!req.body || Object.keys(req.body).length === 0)
+            {
+                return res.status(400).json({
+                    success: false,
+                    error: "No data provided for update"
+                });
+            }
+            const result = await UserService.UpdateUserInfo(req.user.id, req.body);
+            return res.status(200).json({
+                success: true,
+                message: "User updated successfully",
+                rowsAffected: result
+            });
         }
         catch (error)
         {
-            return res.status(400).json({ success: false, error: error.message });
+            if (error.message === "User not found or no changes applied")
+            {
+                return res.status(404).json({
+                    success: false,
+                    error: "Not found or no changes applied"
+                });
+            }
+            if (error.name?.includes("SequelizeValidationError") || error.name?.includes("SequelizeUniqueConstraintError"))
+            {
+                return res.status(400).json({
+                    success: false,
+                    error: "Validation error",
+                    details: process.env.NODE_ENV === "development" ? error.message : undefined
+                });
+            }
+
+            if (error.name?.includes("Sequelize"))
+            {
+                return res.status(500).json({
+                    success: false,
+                    error: "Database error",
+                    details: process.env.NODE_ENV === "development" ? error.message : undefined
+                });
+            }
+
+            return res.status(500).json({
+                success: false,
+                error: "Internal server error",
+                details: process.env.NODE_ENV === "development" ? error.message : undefined
+            });
         }
     }
 
@@ -266,12 +408,42 @@ class UserController
     {
         try
         {
-            await UserService.DeleteUser(req.user.id);
-            return res.status(200).json({ success: true });
+            const result = await UserService.DeleteUser(req.user.id);
+            if (result === 0)
+            { 
+                return res.status(404).json({
+                    success: false,
+                    error: "User not found"
+                });
+            }
+            return res.status(200).json({
+                success: true,
+                message: "User deleted successfully"
+            });
         }
         catch (error)
         {
-            return res.status(400).json({ success: false, error: error.message });
+            if (error.message === "User doesn't exist")
+            {
+                return res.status(404).json({
+                    success: false,
+                    error: "User not found"
+                });
+            }
+            if (error.name?.includes("Sequelize"))
+            {
+                return res.status(500).json({
+                    success: false,
+                    error: "Database error",
+                    details: process.env.NODE_ENV === "development" ? error.message : undefined
+                });
+            }
+
+            return res.status(500).json({
+                success: false,
+                error: "Internal server error",
+                details: process.env.NODE_ENV === "development" ? error.message : undefined
+            });
         }
     }
 }

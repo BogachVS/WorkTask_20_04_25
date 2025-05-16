@@ -36,11 +36,36 @@ class ProjectController
         try
         {
             const projects = await ProjectService.GetAllUserProjects(req.user.id);
-            return res.status(200).json(projects);
+
+            if (!projects || projects.length === 0)
+            {
+                return res.status(200).json({
+                    success: true,
+                    message: "No projects found",
+                    data: []
+                });
+            }
+            return res.status(200).json({
+                success: true,
+                data: projects
+            });
         }
         catch (error)
         {
-            return res.status(400).json({ error: error.message });
+            if (error.name?.includes("Sequelize"))
+            {
+                return res.status(500).json({
+                    success: false,
+                    error: "Database error",
+                    details: process.env.NODE_ENV === "development" ? error.message : undefined
+                });
+            }
+
+            return res.status(500).json({
+                success: false,
+                error: "Failed to fetch projects",
+                details: process.env.NODE_ENV === "development" ? error.message : undefined
+            });
         }
     }
 
@@ -86,12 +111,32 @@ class ProjectController
         try
         {
             const { ProjectName, ProjectType } = req.body;
+            if (!ProjectName || !ProjectType)
+            {
+                return res.status(400).json({
+                    success: false,
+                    error: "ProjectName and ProjectType are required"
+                });
+            }
             await ProjectService.AddNewProject(req.user.id, ProjectName, ProjectType);
-            return res.status(200).json({ success: true });
+            return res.status(201).json({ success: true, message: "Project created successfully" });
         }
         catch (error)
         {
-            return res.status(400).json({ error: error.message });
+            if(error.name?.includes("Sequelize"))
+            {
+                return res.status(500).json({
+                    success: false,
+                    error: "Database error",
+                    details: process.env.NODE_ENV === "development" ? error.message : undefined
+                });
+            }
+
+            return res.status(500).json({
+                success: false,
+                error: "Failed to create project",
+                details: process.env.NODE_ENV === "development" ? error.message : undefined
+            });
         }
     }
 
@@ -134,11 +179,34 @@ class ProjectController
         try
         {
             const project = await ProjectService.GetProjectInfo(req.params.Id);
-            return res.status(200).json(project);
+            if (!project)
+            {
+                return res.status(404).json({
+                    success: false,
+                    error: "Project not found"
+                });
+            }
+            return res.status(200).json({
+                success: true,
+                data: project
+            });
         }
         catch (error)
         {
-            return res.status(400).json({ error: error.message });
+            if (error.name?.includes("Sequelize"))
+            {
+                return res.status(500).json({
+                    success: false,
+                    error: "Database error",
+                    details: process.env.NODE_ENV === "development" ? error.message : undefined
+                });
+            }
+
+            return res.status(500).json({
+                success: false,
+                error: "Failed to fetch project",
+                details: process.env.NODE_ENV === "development" ? error.message : undefined
+            });
         }
     }
 
@@ -195,12 +263,42 @@ class ProjectController
         try
         {
             const { ProjectName } = req.body;
-            const rowsAffected = await ProjectService.ChangeProjectName(req.params.Id, ProjectName);
-            return res.status(200).json({ success: true, rowsAffected });
+            if (!ProjectName)
+            {
+                return res.status(400).json({
+                    success: false,
+                    error: "ProjectName is required"
+                });
+            }
+            const result = await ProjectService.ChangeProjectName(req.params.Id, ProjectName);
+            return res.status(200).json({
+                success: true,
+                message: "Project name updated successfully",
+                rowsAffected: result
+            });
         }
         catch (error)
         {
-            return res.status(400).json({ error: error.message });
+            if (error.message.includes("doesn't exist") || error.message.includes("new name is the same"))
+            {
+                return res.status(404).json({
+                    success: false,
+                    error: error.message
+                });
+            }
+            if (error.name?.includes("Sequelize"))
+            {
+                return res.status(500).json({
+                    success: false,
+                    error: "Database error",
+                    details: process.env.NODE_ENV === "development" ? error.message : undefined
+                });
+            }
+            return res.status(500).json({
+                success: false,
+                error: "Failed to update project name",
+                details: process.env.NODE_ENV === "development" ? error.message : undefined
+            });
         }
     }
 
@@ -246,12 +344,35 @@ class ProjectController
     {
         try
         {
-            await ProjectService.RegenerateApiKey(req.params.Id);
-            return res.status(200).json({ success: true });
+            const result = await ProjectService.RegenerateApiKey(req.params.Id);
+            return res.status(200).json({
+                success: true,
+                message: "API key regenerated successfully",
+                rowsAffected: result
+            });
         }
         catch (error)
         {
-            return res.status(400).json({ error: error.message });
+            if (error.message.includes("doesn't exist") || error.message.includes("new api is the same"))
+            {
+                return res.status(404).json({
+                    success: false,
+                    error: error.message
+                });
+            }
+            if (error.name?.includes("Sequelize"))
+            {
+                return res.status(500).json({
+                    success: false,
+                    error: "Database error",
+                    details: process.env.NODE_ENV === "development" ? error.message : undefined
+                });
+            }
+            return res.status(500).json({
+                success: false,
+                error: "Failed to regenerate API key",
+                details: process.env.NODE_ENV === "development" ? error.message : undefined
+            });
         }
     }
 
@@ -298,11 +419,33 @@ class ProjectController
         try
         {
             await ProjectService.DeleteProject(req.body, req.params.Id);
-            return res.status(200).json({ success: true });
+            return res.status(200).json({
+                success: true,
+                message: "Project deleted successfully"
+            });
         }
         catch (error)
         {
-            return res.status(400).json({ error: error.message });
+            if (error.message.includes("doesn't exist"))
+            {
+                return res.status(404).json({
+                    success: false,
+                    error: error.message
+                });
+            }
+            if (error.name?.includes("Sequelize"))
+            {
+                return res.status(500).json({
+                    success: false,
+                    error: "Database error",
+                    details: process.env.NODE_ENV === "development" ? error.message : undefined
+                });
+            }
+            return res.status(500).json({
+                success: false,
+                error: "Failed to delete project",
+                details: process.env.NODE_ENV === "development" ? error.message : undefined
+            });
         }
     }
 }

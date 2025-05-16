@@ -22,14 +22,17 @@ class AuthController {
    *                   type: string
    *                   example: "https://accounts.google.com/o/oauth2/v2/auth?..."
    */
-  async GetGoogleAuthURL(req, res) {
-    try {
-      const url = await AuthService.generateAuthUrl();
-      res.status(200).json({ url });
-    } catch (error) {
-      res.status(400).json({ success: false, error: error.message });
+    async GetGoogleAuthURL(req, res)
+    {
+        try
+        {
+            const url = await AuthService.generateAuthUrl();
+            res.status(200).json({ url });
+        } catch (error)
+        {
+            res.status(400).json({ success: false, error: error.message });
+        }
     }
-  }
 
   /**
    * @swagger
@@ -50,21 +53,24 @@ class AuthController {
    *       400:
    *         description: Authentication failed
    */
-  async GoogleOAuthCallback(req, res) {
-    const { code } = req.query;
-    if (!code) return res.status(400).json({ success: false, error: 'NO_CODE' });
+    async GoogleOAuthCallback(req, res)
+    {
+        const { code } = req.query;
+        if (!code) return res.status(400).json({ success: false, error: 'NO_CODE' });
+        try
+        {
+            const { id_token, refresh_token } = await AuthService.exchangeCode(code);
   
-    try {
-      const { id_token, refresh_token } = await AuthService.exchangeCode(code);
+            const userInfo = await AuthService.verifyIdToken(id_token);
+            const tokens = await UserService.OAuthLogin(userInfo.email, userInfo.name);
   
-      const userInfo = await AuthService.verifyIdToken(id_token);
-      const tokens = await UserService.OAuthLogin(userInfo.email, userInfo.name);
-  
-      return res.redirect(`${frontendUrl}/auth/success?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`);
-    } catch (error) {
-      return res.status(400).json({ success: false, error: error.message });
-    }
-  }
+            return res.redirect(`${frontendUrl}/auth/success?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`);
+        }
+        catch (error)
+        {
+            return res.status(400).json({ success: false, error: error.message });
+        }
+    } 
 
   /**
    * @swagger
@@ -98,16 +104,20 @@ class AuthController {
    *       400:
    *         description: Refresh failed
    */
-  async RefreshToken(req, res) {
-    const { refreshToken } = req.body;
-    if (!refreshToken) return res.status(400).json({ success: false, error: 'NO_REFRESH_TOKEN' });
-    try {
-      const tokens = await UserService.RefreshTokens(refreshToken);
-      res.status(200).json({ success: true, accessToken: tokens.accessToken, refreshToken: tokens.refreshToken});
-    } catch (error) {
-      res.status(400).json({ success: false, error: error.message });
+    async RefreshToken(req, res)
+    {
+        const { refreshToken } = req.body;
+        if (!refreshToken) return res.status(400).json({ success: false, error: 'NO_REFRESH_TOKEN' });
+        try
+        {
+            const tokens = await UserService.RefreshTokens(refreshToken);
+            res.status(200).json({ success: true, accessToken: tokens.accessToken, refreshToken: tokens.refreshToken});
+        }
+        catch (error)
+        {
+            res.status(400).json({ success: false, error: error.message });
+        }
     }
-  }
 }
 
 export default new AuthController();
