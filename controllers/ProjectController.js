@@ -118,8 +118,8 @@ class ProjectController
                     error: "ProjectName and ProjectType are required"
                 });
             }
-            await ProjectService.AddNewProject(req.user.id, ProjectName, ProjectType);
-            return res.status(201).json({ success: true, message: "Project created successfully" });
+            const result = await ProjectService.AddNewProject(req.user.id, ProjectName, ProjectType);
+            return res.status(201).json({ success: true, message: "Project created successfully", project: result});
         }
         catch (error)
         {

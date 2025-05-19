@@ -38,13 +38,14 @@ class ProjectService
         try
         {
             const ApiKey = crypto.randomBytes(32).toString('hex');
-            await Project.create(
+            const project = await Project.create(
                 {
                     ProjectName,
                     ProjectType,
                     ApiKey,
                     UserId
                 });
+            return project;
         }
         catch (error)
         {
