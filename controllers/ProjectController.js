@@ -348,7 +348,7 @@ class ProjectController
             return res.status(200).json({
                 success: true,
                 message: "API key regenerated successfully",
-                rowsAffected: result
+                newApi: result
             });
         }
         catch (error)
@@ -418,7 +418,7 @@ class ProjectController
     {
         try
         {
-            await ProjectService.DeleteProject(req.body, req.params.Id);
+            await ProjectService.DeleteProject(req.params.Id);
             return res.status(200).json({
                 success: true,
                 message: "Project deleted successfully"

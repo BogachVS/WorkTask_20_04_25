@@ -67,7 +67,7 @@ class ProjectService
             {
                 throw new Error("Project not found or new api is the same as the current one");
             }
-            return update;
+            return newKey;
         }
         catch (error)
         {
@@ -97,20 +97,21 @@ class ProjectService
         }
     }
 
-    async DeleteProject(UserId, Id)
+    async DeleteProject(Id)
     {
         try
         {
-            const project = await Project.findOne({ where: { Id, UserId } });
+            const project = await Project.findOne({ where: { Id} });
             if (!project)
             {
                 throw new Error("Project doesn't exist");
             }
+            const userId = project.UserId;
             await User.decrement('CurrentDevicesCount', {
                 by: project.ProjectDevicesCount,
-                where: { Id: UserId }
+                where: { Id: userId }
             });
-            await Project.destroy({ where: Id, UserId });
+            await Project.destroy({ where: Id});
         }
         catch (error)
         {
